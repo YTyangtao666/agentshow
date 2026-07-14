@@ -1,0 +1,18 @@
+{
+  "name": "@agentshow/widget",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsup src/index.ts --format iife --name initAgentShow --out-dir dist"
+  },
+  "dependencies": {
+    "@agentshow/shared": "*",
+    "@agentshow/core": "*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0"
+  }
+}
