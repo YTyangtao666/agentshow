@@ -1,0 +1,26 @@
+{
+  "name": "agentshow",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-powered product demo and tour tool — first time explored by AI, every time after replayed deterministically.",
+  "license": "MIT",
+  "author": "阳涛 <202310244326@stu.hlju.edu.cn>",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "dev": "npm run dev --workspaces",
+    "lint": "eslint packages/",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0",
+    "@types/node": "^22.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
