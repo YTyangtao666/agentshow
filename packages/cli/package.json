@@ -1,0 +1,17 @@
+{
+  "name": "@agentshow/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "agentshow": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agentshow/shared": "*",
+    "@agentshow/core": "*",
+    "@agentshow/server": "*",
+    "commander": "^12.1.0"
+  }
+}

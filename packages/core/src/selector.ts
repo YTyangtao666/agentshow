@@ -28,10 +28,10 @@ export function generateSelector(el: HTMLElement): string {
       parts.unshift(`#${current.id}`);
       break;
     }
-    const parent = current.parentElement;
+    const parent: HTMLElement | null = current.parentElement;
     if (parent) {
       const siblings = Array.from(parent.children).filter(
-        (c) => c.tagName === current!.tagName,
+        (c: Element) => c.tagName === current!.tagName,
       );
       if (siblings.length > 1) {
         const index = siblings.indexOf(current) + 1;
