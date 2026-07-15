@@ -23,6 +23,10 @@ export class LLMClient {
     this.baseUrl = config.baseUrl ?? PROVIDER_URLS[config.provider] ?? PROVIDER_URLS.deepseek;
   }
 
+  hasApiKey(): boolean {
+    return !!this.apiKey && !this.apiKey.startsWith('${');
+  }
+
   async chat(
     messages: ChatMessage[],
     options?: { jsonMode?: boolean; temperature?: number },

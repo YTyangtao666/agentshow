@@ -9,7 +9,8 @@
   },
   "server": {
     "port": 9100,
-    "target": "http://localhost:5175"
+    "target": "http://localhost:5175",
+    "dev": true
   },
   "features": [
     "展示AI生成小说功能",

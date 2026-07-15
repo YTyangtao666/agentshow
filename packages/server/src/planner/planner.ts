@@ -42,7 +42,12 @@ export class Planner {
       };
     }
 
-    // 2. 构建配置功能描述
+    // 2. 检查是否有API key — 没有则使用Demo Plan
+    if (!this.llm.hasApiKey()) {
+      return this.getDemoPlan(intent, elements);
+    }
+
+    // 3. 构建配置功能描述
     const featuresText = this.config.features
       ?.map(
         (f) =>
@@ -96,6 +101,134 @@ export class Planner {
     return {
       reply: parsed.reply,
       steps: parsed.steps,
+      cached: false,
+    };
+  }
+
+  private getDemoPlan(intent: string, elements: PageElement[]): PlanResult {
+    // Demo plan: navigate to common InkMuse features
+    const intentLower = intent.toLowerCase();
+
+    // 尝试匹配页面上的元素
+    const createNovelLink = elements.find(
+      (e) => e.text.includes('创建作品') || e.text.includes('创建') || e.text.includes('新篇章'),
+    );
+    const aiAssistantLink = elements.find(
+      (e) => e.text.includes('AI') || e.text.includes('助手'),
+    );
+    const knowledgeLink = elements.find(
+      (e) => e.text.includes('知识库') || e.text.includes('知识'),
+    );
+    const statsLink = elements.find(
+      (e) => e.text.includes('统计') || e.text.includes('数据'),
+    );
+
+    const steps: PlanStep[] = [];
+
+    if (intentLower.includes('创建') || intentLower.includes('作品') || intentLower.includes('小说') || intentLower.includes('写')) {
+      if (createNovelLink) {
+        steps.push({
+          action: 'highlight',
+          selector: createNovelLink.selector,
+          narrate: '让我为你展示「创建作品」功能，这是你开始新创作的入口',
+          duration: 3000,
+        });
+        steps.push({
+          action: 'click',
+          selector: createNovelLink.selector,
+          narrate: '点击进入创建作品页面',
+        });
+      } else {
+        steps.push({
+          action: 'navigate',
+          url: '/novels/new',
+          narrate: '导航到创建作品页面',
+        });
+      }
+    } else if (intentLower.includes('ai') || intentLower.includes('助手') || intentLower.includes('智能')) {
+      const target = aiAssistantLink;
+      if (target) {
+        steps.push({
+          action: 'highlight',
+          selector: target.selector,
+          narrate: '这是AI助手，它可以帮助你智能续写、润色文章',
+          duration: 3000,
+        });
+        steps.push({
+          action: 'click',
+          selector: target.selector,
+          narrate: '点击打开AI助手',
+        });
+      }
+    } else if (intentLower.includes('知识') || intentLower.includes('素材')) {
+      const target = knowledgeLink;
+      if (target) {
+        steps.push({
+          action: 'highlight',
+          selector: target.selector,
+          narrate: '知识库可以管理你的创作素材和参考资料',
+          duration: 3000,
+        });
+        steps.push({
+          action: 'click',
+          selector: target.selector,
+          narrate: '点击进入知识库',
+        });
+      }
+    } else if (intentLower.includes('统计') || intentLower.includes('数据')) {
+      const target = statsLink;
+      if (target) {
+        steps.push({
+          action: 'highlight',
+          selector: target.selector,
+          narrate: '数据统计展示你的创作历程和成果',
+          duration: 3000,
+        });
+        steps.push({
+          action: 'click',
+          selector: target.selector,
+          narrate: '点击查看数据统计',
+        });
+      }
+    } else {
+      // 默认：展示首页主要功能
+      if (createNovelLink) {
+        steps.push({
+          action: 'highlight',
+          selector: createNovelLink.selector,
+          narrate: '这里是「创建作品」入口，可以开始新的小说创作',
+          duration: 2500,
+        });
+      }
+      if (aiAssistantLink) {
+        steps.push({
+          action: 'highlight',
+          selector: aiAssistantLink.selector,
+          narrate: 'AI助手为你提供智能写作辅助',
+          duration: 2500,
+        });
+      }
+      if (knowledgeLink) {
+        steps.push({
+          action: 'highlight',
+          selector: knowledgeLink.selector,
+          narrate: '知识库管理你的创作素材',
+          duration: 2500,
+        });
+      }
+    }
+
+    if (steps.length === 0) {
+      steps.push({
+        action: 'highlight',
+        narrate: '欢迎使用InkMuse智能叙事工坊！请在左侧导航中选择你需要的功能。',
+        duration: 3000,
+      });
+    }
+
+    return {
+      reply: '好的，我来为你演示！',
+      steps,
       cached: false,
     };
   }

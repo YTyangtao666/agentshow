@@ -15,6 +15,7 @@ export interface AgentShowConfig {
 
   server: {
     port: number;
+    dev?: boolean;
   };
 
   demo: {

@@ -18,7 +18,7 @@ export async function startServer(
   config: AgentShowConfig,
 ): Promise<{ port: number; token: string }> {
   const port = config.server.port;
-  const token = generateToken();
+  const token = config.server.dev ? '' : generateToken();
   const allowedOrigins = [
     'http://localhost:5175',
     'http://localhost:5173',
@@ -93,11 +93,13 @@ export async function startServer(
       return;
     }
 
-    // Origin校验
-    const origin = req.headers.origin;
-    if (origin && !isAllowedOrigin(origin, allowedOrigins)) {
-      ws.close(4003, 'Forbidden');
-      return;
+    // Origin校验（dev模式跳过）
+    if (!config.server.dev) {
+      const origin = req.headers.origin;
+      if (origin && !isAllowedOrigin(origin, allowedOrigins)) {
+        ws.close(4003, 'Forbidden');
+        return;
+      }
     }
 
     console.log('[AgentShow] Widget connected');
