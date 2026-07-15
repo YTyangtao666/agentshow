@@ -1,3 +1,5 @@
+import { AgentShowApp } from './app.js';
+
 export interface InitOptions {
   port: number;
   token: string;
@@ -16,9 +18,7 @@ export function initAgentShow(options: InitOptions): void {
   }
   (window as any).__agentshow_initialized = true;
 
-  import('./app.js').then(({ AgentShowApp }) => {
-    new AgentShowApp(options);
-  });
+  new AgentShowApp(options);
 }
 
 // Auto-init from global var

@@ -6,7 +6,8 @@
   "types": "./src/index.ts",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsup src/index.ts --format iife --name initAgentShow --out-dir dist"
+    "build": "tsup src/index.ts --format iife --global-name initAgentShow --out-dir dist",
+    "build:inject": "tsup src/inject.ts --format iife --out-dir dist/inject"
   },
   "dependencies": {
     "@agentshow/shared": "*",

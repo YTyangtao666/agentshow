@@ -3,11 +3,14 @@ export function delay(ms: number): Promise<void> {
 }
 
 export function generateToken(): string {
+  // Browser or Node >= 19
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
   }
-  const { randomUUID } = require('node:crypto');
-  return randomUUID();
+  // Fallback for older Node
+  return Array.from({ length: 16 }, () =>
+    Math.floor(Math.random() * 256).toString(16).padStart(2, '0'),
+  ).join('');
 }
 
 export function isAllowedOrigin(

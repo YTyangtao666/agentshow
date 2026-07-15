@@ -39,11 +39,13 @@ export async function startServer(
       return;
     }
 
-    if (req.url === '/widget.js') {
+    const reqUrl = (req.url ?? '/').split('?')[0];
+
+    if (reqUrl === '/widget.js') {
       // Try to read widget bundle
       const widgetPaths = [
-        resolve(__dirname, '../../widget/dist/widget.js'),
-        resolve(process.cwd(), 'packages/widget/dist/widget.js'),
+        resolve(__dirname, '../../widget/dist/entry-browser.global.js'),
+        resolve(process.cwd(), 'packages/widget/dist/entry-browser.global.js'),
       ];
       for (const wp of widgetPaths) {
         try {
@@ -63,7 +65,7 @@ export async function startServer(
       return;
     }
 
-    if (req.url === '/health') {
+    if (reqUrl === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: true, port, version: '0.1.0' }));
       return;
@@ -83,10 +85,10 @@ export async function startServer(
   let handler: WSHandler | null = null;
 
   wss.on('connection', (ws: WebSocket, req: import('node:http').IncomingMessage) => {
-    // Token鉴权
+    // Token鉴权（dev模式允许空token）
     const url = new URL(req.url ?? '/', `http://localhost`);
     const clientToken = url.searchParams.get('token');
-    if (clientToken !== token) {
+    if (token && clientToken !== token) {
       ws.close(4001, 'Unauthorized');
       return;
     }

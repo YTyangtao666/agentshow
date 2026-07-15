@@ -1,0 +1,21 @@
+{
+  "name": "inkmuse-demo",
+  "description": "InkMuse AI Novel Studio",
+  "version": "0.1.0",
+  "ai": {
+    "provider": "deepseek",
+    "apiKey": "${DEEPSEEK_API_KEY}",
+    "model": "deepseek-chat"
+  },
+  "server": {
+    "port": 9100,
+    "target": "http://localhost:5175"
+  },
+  "features": [
+    "展示AI生成小说功能",
+    "点击创作新故事",
+    "输入故事主题",
+    "展示生成结果",
+    "介绍核心功能模块"
+  ]
+}
