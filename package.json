@@ -5,20 +5,39 @@
   "description": "AI-powered product demo and tour tool — first time explored by AI, every time after replayed deterministically.",
   "license": "MIT",
   "author": "阳涛 <202310244326@stu.hlju.edu.cn>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YTyangtao666/agentshow.git"
+  },
+  "homepage": "https://github.com/YTyangtao666/agentshow#readme",
+  "bugs": {
+    "url": "https://github.com/YTyangtao666/agentshow/issues"
+  },
+  "keywords": [
+    "ai",
+    "demo",
+    "tour",
+    "playwright",
+    "automation",
+    "product-demo",
+    "web-automation",
+    "llm"
+  ],
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
     "build": "npm run build --workspaces",
-    "dev": "npm run dev --workspaces",
+    "dev": "tsx scripts/dev-server.ts",
     "lint": "eslint packages/",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest"
+    "typecheck": "npm run typecheck --workspaces",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/ws": "^8.18.1",
     "tsup": "^8.5.1",
+    "tsx": "^4.19.0",
     "typescript": "^5.5.0",
     "vitest": "^2.0.0"
   },

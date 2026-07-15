@@ -1,12 +1,14 @@
 {
   "name": "@agentshow/widget",
   "version": "0.1.0",
+  "description": "Browser-injected Shadow DOM chat widget for AgentShow — DOM scanner, action executor, visual effects",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
+  "license": "MIT",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "tsup src/index.ts --format iife --global-name initAgentShow --out-dir dist",
+    "build": "tsup src/entry-browser.ts --format iife --global-name initAgentShow --out-dir dist",
     "build:inject": "tsup src/inject.ts --format iife --out-dir dist/inject"
   },
   "dependencies": {

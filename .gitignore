@@ -29,3 +29,4 @@ Thumbs.db
 coverage/
 
 # Lock files (keep package-lock.json for npm workspaces)
+docs/report-screenshots/
