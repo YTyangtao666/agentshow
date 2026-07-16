@@ -106,115 +106,135 @@ export class Planner {
   }
 
   private getDemoPlan(intent: string, elements: PageElement[]): PlanResult {
-    // Demo plan: navigate to common InkMuse features
     const intentLower = intent.toLowerCase();
 
-    // 尝试匹配页面上的元素
-    const createNovelLink = elements.find(
-      (e) => e.text.includes('创建作品') || e.text.includes('创建') || e.text.includes('新篇章'),
-    );
-    const aiAssistantLink = elements.find(
-      (e) => e.text.includes('AI') || e.text.includes('助手'),
-    );
-    const knowledgeLink = elements.find(
-      (e) => e.text.includes('知识库') || e.text.includes('知识'),
-    );
-    const statsLink = elements.find(
-      (e) => e.text.includes('统计') || e.text.includes('数据'),
-    );
+    // Generic element finder: search by multiple keyword candidates
+    const findEl = (...keywords: string[]) =>
+      elements.find((e) => keywords.some((kw) => e.text.includes(kw)));
+
+    // Build a highlight + click pair for a matched element
+    const highlightAndClick = (
+      target: PageElement | undefined,
+      highlightMsg: string,
+      clickMsg: string,
+      fallbackUrl?: string,
+    ): PlanStep[] => {
+      if (target) {
+        return [
+          { action: 'highlight', selector: target.selector, narrate: highlightMsg, duration: 2500 },
+          { action: 'click', selector: target.selector, narrate: clickMsg },
+        ];
+      }
+      if (fallbackUrl) {
+        return [{ action: 'navigate', url: fallbackUrl, narrate: clickMsg }];
+      }
+      return [];
+    };
 
     const steps: PlanStep[] = [];
 
-    if (intentLower.includes('创建') || intentLower.includes('作品') || intentLower.includes('小说') || intentLower.includes('写')) {
-      if (createNovelLink) {
-        steps.push({
-          action: 'highlight',
-          selector: createNovelLink.selector,
-          narrate: '让我为你展示「创建作品」功能，这是你开始新创作的入口',
-          duration: 3000,
-        });
-        steps.push({
-          action: 'click',
-          selector: createNovelLink.selector,
-          narrate: '点击进入创建作品页面',
-        });
-      } else {
-        steps.push({
-          action: 'navigate',
-          url: '/novels/new',
-          narrate: '导航到创建作品页面',
-        });
+    // Define page matchers in priority order (most specific first)
+    type Matcher = {
+      keywords: string[];          // if intent includes ANY of these
+      find: () => PageElement | undefined;
+      highlight: string;
+      click: string;
+      fallback?: string;
+    };
+
+    const matchers: Matcher[] = [
+      {
+        keywords: ['文章', '文案', '公众号', '小红书', '抖音'],
+        find: () => findEl('我的文章', '文章', '新建文档'),
+        highlight: '这里是文章与文案模块，支持多种内容格式创作',
+        click: '点击进入文章列表',
+        fallback: '/documents',
+      },
+      {
+        keywords: ['ai', '助手', '智能', '续写', '润色'],
+        find: () => findEl('AI 助手', 'AI助手', 'AI'),
+        highlight: '这是AI助手，它可以帮助你智能续写、润色文章',
+        click: '点击打开AI助手',
+        fallback: '/ai/assistant',
+      },
+      {
+        keywords: ['知识库', '知识', '素材', '参考'],
+        find: () => findEl('知识库', '知识'),
+        highlight: '知识库可以管理你的创作素材和参考资料',
+        click: '点击进入知识库',
+        fallback: '/kb',
+      },
+      {
+        keywords: ['统计', '数据', '概览'],
+        find: () => findEl('数据统计', '统计', '数据'),
+        highlight: '数据统计展示你的创作历程和成果',
+        click: '点击查看数据统计',
+        fallback: '/stats',
+      },
+      {
+        keywords: ['作品库', '我的作品', '书架', '列表'],
+        find: () => findEl('我的作品', '作品'),
+        highlight: '这是你的作品库，管理所有已创建的小说',
+        click: '点击查看作品列表',
+        fallback: '/novels',
+      },
+      {
+        keywords: ['创建', '新建', '写', '开始', '小说', '篇章'],
+        find: () => findEl('创建作品', '创建', '新篇章', '开始新篇章'),
+        highlight: '让我为你展示「创建作品」功能，这是你开始新创作的入口',
+        click: '点击进入创建作品页面',
+        fallback: '/novels/new',
+      },
+      {
+        keywords: ['导入', '上传小说'],
+        find: () => findEl('导入小说', '导入'),
+        highlight: '可以导入已有的小说文件到平台',
+        click: '点击进入导入页面',
+        fallback: '/novels/import',
+      },
+      {
+        keywords: ['导出', '下载'],
+        find: () => findEl('导出中心', '导出'),
+        highlight: '导出中心可以将你的作品导出为多种格式',
+        click: '点击进入导出中心',
+        fallback: '/export',
+      },
+      {
+        keywords: ['个人', '设置', 'profile'],
+        find: () => findEl('个人中心', '个人', '设置'),
+        highlight: '个人中心可以查看和修改你的账户信息',
+        click: '点击进入个人中心',
+        fallback: '/profile',
+      },
+      {
+        keywords: ['回收站', '删除', '垃圾桶'],
+        find: () => findEl('回收站'),
+        highlight: '回收站存放已删除的作品和文档',
+        click: '点击查看回收站',
+        fallback: '/recycle',
+      },
+    ];
+
+    // Find first matching matcher
+    for (const m of matchers) {
+      if (m.keywords.some((kw) => intentLower.includes(kw))) {
+        steps.push(...highlightAndClick(m.find(), m.highlight, m.click, m.fallback));
+        break;
       }
-    } else if (intentLower.includes('ai') || intentLower.includes('助手') || intentLower.includes('智能')) {
-      const target = aiAssistantLink;
-      if (target) {
-        steps.push({
-          action: 'highlight',
-          selector: target.selector,
-          narrate: '这是AI助手，它可以帮助你智能续写、润色文章',
-          duration: 3000,
-        });
-        steps.push({
-          action: 'click',
-          selector: target.selector,
-          narrate: '点击打开AI助手',
-        });
-      }
-    } else if (intentLower.includes('知识') || intentLower.includes('素材')) {
-      const target = knowledgeLink;
-      if (target) {
-        steps.push({
-          action: 'highlight',
-          selector: target.selector,
-          narrate: '知识库可以管理你的创作素材和参考资料',
-          duration: 3000,
-        });
-        steps.push({
-          action: 'click',
-          selector: target.selector,
-          narrate: '点击进入知识库',
-        });
-      }
-    } else if (intentLower.includes('统计') || intentLower.includes('数据')) {
-      const target = statsLink;
-      if (target) {
-        steps.push({
-          action: 'highlight',
-          selector: target.selector,
-          narrate: '数据统计展示你的创作历程和成果',
-          duration: 3000,
-        });
-        steps.push({
-          action: 'click',
-          selector: target.selector,
-          narrate: '点击查看数据统计',
-        });
-      }
-    } else {
-      // 默认：展示首页主要功能
-      if (createNovelLink) {
-        steps.push({
-          action: 'highlight',
-          selector: createNovelLink.selector,
-          narrate: '这里是「创建作品」入口，可以开始新的小说创作',
-          duration: 2500,
-        });
-      }
-      if (aiAssistantLink) {
-        steps.push({
-          action: 'highlight',
-          selector: aiAssistantLink.selector,
-          narrate: 'AI助手为你提供智能写作辅助',
-          duration: 2500,
-        });
-      }
-      if (knowledgeLink) {
-        steps.push({
-          action: 'highlight',
-          selector: knowledgeLink.selector,
-          narrate: '知识库管理你的创作素材',
-          duration: 2500,
-        });
+    }
+
+    // Fallback: showcase main features
+    if (steps.length === 0) {
+      const showcase: Array<{ find: () => PageElement | undefined; msg: string }> = [
+        { find: () => findEl('创建作品', '新篇章'), msg: '这里是「创建作品」入口，可以开始新的小说创作' },
+        { find: () => findEl('AI 助手', 'AI助手'), msg: 'AI助手为你提供智能写作辅助' },
+        { find: () => findEl('知识库'), msg: '知识库管理你的创作素材' },
+        { find: () => findEl('我的文章', '文章'), msg: '文章与文案模块支持多种内容创作' },
+        { find: () => findEl('数据统计'), msg: '数据统计展示你的创作成果' },
+      ];
+      for (const s of showcase) {
+        const el = s.find();
+        if (el) steps.push({ action: 'highlight', selector: el.selector, narrate: s.msg, duration: 2000 });
       }
     }
 
