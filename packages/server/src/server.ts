@@ -28,8 +28,22 @@ export async function startServer(
     'http://127.0.0.1:3000',
   ];
 
+  /** Resolve CORS Origin: return the matching origin if allowed, else null */
+  function getAllowedOrigin(reqOrigin: string | undefined): string | null {
+    if (!reqOrigin) return null;
+    return allowedOrigins.includes(reqOrigin) ? reqOrigin : null;
+  }
+
   const server = createServer((req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    const reqOrigin = req.headers.origin;
+    const allowedOrigin = getAllowedOrigin(reqOrigin);
+
+    // In dev mode, allow all origins; in prod, enforce whitelist
+    const corsOrigin = config.server.dev
+      ? (reqOrigin ?? '*')
+      : (allowedOrigin ?? '');
+
+    res.setHeader('Access-Control-Allow-Origin', corsOrigin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -52,7 +66,7 @@ export async function startServer(
           const code = readFileSync(wp, 'utf-8');
           res.writeHead(200, {
             'Content-Type': 'application/javascript',
-            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Origin': corsOrigin,
           });
           res.end(code);
           return;
@@ -82,7 +96,7 @@ export async function startServer(
     title: '',
     elements: [],
   };
-  let handler: WSHandler | null = null;
+  const handler = new WSHandler(config, cache);
 
   wss.on('connection', (ws: WebSocket, req: import('node:http').IncomingMessage) => {
     // Token鉴权（dev模式允许空token）
@@ -103,7 +117,6 @@ export async function startServer(
     }
 
     console.log('[AgentShow] Widget connected');
-    handler = new WSHandler(config, cache);
 
     ws.on('message', async (data: Buffer) => {
       try {
@@ -118,9 +131,7 @@ export async function startServer(
           return;
         }
 
-        if (handler) {
-          await handler.handleMessage(ws, msg, currentPage);
-        }
+        await handler.handleMessage(ws, msg, currentPage);
       } catch (err) {
         console.error('[AgentShow] WS error:', err);
       }
@@ -128,6 +139,7 @@ export async function startServer(
 
     ws.on('close', () => {
       console.log('[AgentShow] Widget disconnected');
+      handler.cleanupSession(ws);
     });
   });
 

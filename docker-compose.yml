@@ -1,0 +1,23 @@
+# AgentShow Docker Compose
+# Run with: docker compose up --build
+
+services:
+  agentshow:
+    build: .
+    ports:
+      - "9100:9100"
+    environment:
+      - AGENTSHOW_PORT=9100
+      # Uncomment to set API key at runtime
+      # - DEEPSEEK_API_KEY=your-key-here
+    volumes:
+      # Mount your config and host app
+      - ./agentshow.config.json:/app/agentshow.config.json
+      # - ./your-host-app/dist:/app/host-app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:9100/health').then(r=>{if(!r.ok)throw 1}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

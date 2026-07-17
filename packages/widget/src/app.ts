@@ -14,6 +14,7 @@ export class AgentShowApp {
   private widget: ChatWidget;
   private executor: ActionExecutor;
   private domSyncTimer: number | null = null;
+  private _wasReconnecting = false;
 
   constructor(options: InitOptions) {
     this.ws = new WSClient(options.port, options.token);
@@ -23,6 +24,19 @@ export class AgentShowApp {
   }
 
   private registerWsHandlers(): void {
+    // 监听连接状态
+    this.ws.onStatus((status) => {
+      if (status === 'reconnecting') {
+        this.widget.addSystemMessage('AgentShow 正在重新连接...');
+        this.widget.setStatus('idle');
+      } else if (status === 'disconnected') {
+        this.widget.addSystemMessage('AgentShow 连接已断开');
+      } else if (status === 'connected' && this._wasReconnecting) {
+        this.widget.addSystemMessage('AgentShow 已重新连接');
+      }
+      this._wasReconnecting = status === 'reconnecting';
+    });
+
     // 监听Server消息
     this.ws.on('chat', (msg: ServerMessage) => {
       if (msg.type === 'chat' && 'sender' in msg && msg.sender === 'agent') {

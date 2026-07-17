@@ -11,6 +11,8 @@ export interface AgentShowConfig {
     baseUrl?: string;
     model: string;
     language?: string;
+    /** Request timeout in ms (default: 30000) */
+    timeout?: number;
   };
 
   server: {

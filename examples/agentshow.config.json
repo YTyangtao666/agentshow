@@ -1,0 +1,78 @@
+{
+  "name": "My SaaS App",
+  "description": "AgentShow config for demonstrating a SaaS dashboard",
+  "version": "1.0.0",
+
+  "ai": {
+    "provider": "deepseek",
+    "apiKey": "YOUR_API_KEY",
+    "model": "deepseek-chat",
+    "timeout": 30000
+  },
+
+  "server": {
+    "port": 9100,
+    "dev": true
+  },
+
+  "demo": {
+    "autoplay": false,
+    "tts": false,
+    "theme": "light",
+    "position": "bottom-right"
+  },
+
+  "features": [
+    {
+      "id": "dashboard",
+      "name": "Dashboard",
+      "description": "Main analytics dashboard with charts and metrics",
+      "keywords": ["dashboard", "仪表盘", "首页", "统计", "overview"],
+      "steps": [
+        {
+          "action": "highlight",
+          "selector": "#sidebar-dashboard",
+          "narrate": "这是主仪表盘，展示核心业务指标",
+          "duration": 3000
+        },
+        {
+          "action": "click",
+          "selector": "#sidebar-dashboard",
+          "narrate": "点击进入仪表盘"
+        }
+      ]
+    },
+    {
+      "id": "create-project",
+      "name": "Create Project",
+      "description": "Create a new project from scratch or template",
+      "keywords": ["创建", "新建", "项目", "project", "create"],
+      "steps": [
+        {
+          "action": "navigate",
+          "url": "/projects/new",
+          "condition": "#project-form:visible",
+          "timeout": 5000,
+          "narrate": "导航到创建项目页面"
+        },
+        {
+          "action": "highlight",
+          "selector": "#project-name-input",
+          "narrate": "输入项目名称"
+        }
+      ]
+    }
+  ],
+
+  "playbooks": [
+    {
+      "id": "full-tour",
+      "name": "Complete Platform Tour",
+      "description": "Walk through all major features",
+      "features": ["dashboard", "create-project"]
+    }
+  ],
+
+  "dangerousKeywords": ["删除", "清空", "支付", "发送邮件", "提交订单"],
+  "dangerousSelectors": ["#delete-all-btn", "#payment-confirm"]
+}

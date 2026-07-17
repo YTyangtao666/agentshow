@@ -6,7 +6,32 @@ const ALLOWED_ACTIONS: ActionType[] = [
 
 const MAX_STEPS = 20;
 const MAX_VALUE_LENGTH = 1000;
+const MAX_SELECTOR_LENGTH = 500;
 const DEFAULT_DANGEROUS_KEYWORDS = ['删除', '清空', '支付', '发送邮件', '提交订单'];
+
+/**
+ * Validate that a CSS selector is safe for querySelector.
+ * Rejects selectors containing JavaScript injection vectors or overly complex patterns.
+ *
+ * Allowed: standard CSS selectors — #id, .class, tag, >, :nth-of-type(), [attr="value"]
+ * Blocked: < > ; (} ) as standalone tokens, javascript:, data:, expression(), url()
+ */
+const SELECTOR_BLACKLIST_PATTERNS: RegExp[] = [
+  /javascript:/i,
+  /expression\s*\(/i,
+  /url\s*\(/i,
+  /<[a-zA-Z\/!]/,   // HTML open/close tags like <script>, </div> — but not CSS ">" combinator
+  /\\[0-9a-fA-F]{2}/, // hex escape sequences (obfuscation)
+];
+
+export function isValidSelector(selector: string): boolean {
+  if (!selector || selector.length === 0) return true; // empty is OK (some steps have no selector)
+  if (selector.length > MAX_SELECTOR_LENGTH) return false;
+  for (const pattern of SELECTOR_BLACKLIST_PATTERNS) {
+    if (pattern.test(selector)) return false;
+  }
+  return true;
+}
 
 export interface ValidationResult {
   valid: boolean;
@@ -49,6 +74,10 @@ export function validatePlan(
     }
 
     if (step.selector) {
+      // Selector injection protection
+      if (!isValidSelector(step.selector)) {
+        errors.push(`步骤${i + 1}: selector包含不安全字符`);
+      }
       for (const ds of dangerousSels) {
         if (step.selector === ds) {
           warnings.push(`步骤${i + 1}: 危险selector "${ds}"`);
@@ -60,4 +89,4 @@ export function validatePlan(
   return { valid: errors.length === 0, errors, warnings };
 }
 
-export { ALLOWED_ACTIONS, MAX_STEPS, MAX_VALUE_LENGTH };
+export { ALLOWED_ACTIONS, MAX_STEPS, MAX_VALUE_LENGTH, MAX_SELECTOR_LENGTH };

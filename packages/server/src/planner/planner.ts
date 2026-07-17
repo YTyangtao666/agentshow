@@ -3,6 +3,7 @@ import type {
   PageElement,
   PlanStep,
   CachedPlan,
+  CachedStep,
 } from '@agentshow/shared';
 import { validatePlan } from '@agentshow/core';
 import { LLMClient, type ChatMessage } from '../llm/client.js';
@@ -90,11 +91,11 @@ export class Planner {
       intent,
       pageUrl,
       createdAt: new Date().toISOString(),
-      steps: parsed.steps.map((s) => ({
+      steps: parsed.steps.map((s): CachedStep => ({
         ...s,
         selector: s.selector ?? '',
         intent: s.intent ?? s.narrate ?? '',
-      })) as any,
+      })),
     };
     this.cache.set(cachedPlan);
 
